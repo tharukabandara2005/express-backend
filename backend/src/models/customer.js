@@ -8,7 +8,14 @@ const customerSchema = new mongoose.Schema({
     industry: {
         type: String,
         required: true
-    }
+    },
+    orders: [
+        {
+            description:String,
+            amountInCents:Number
+        }
+    ]
+
 });
 
 module.exports = mongoose.model('Customer', customerSchema);

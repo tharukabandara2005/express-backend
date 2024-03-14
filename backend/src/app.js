@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
 const Customer = require('./models/customer');
+const cors = require('cors');
 
 const PORT = process.env.PORT || 7500;
 const conn = process.env.MONGO;
@@ -13,7 +14,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 }
 
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,9 +29,7 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 })
 
-app.get('/api/customers/:id', async (req, res) => {
-    
-})
+
 
 app.get('/api/customers', async (req, res) => {
     try {
@@ -44,6 +43,57 @@ app.get('/api/customers', async (req, res) => {
 
 })
 
+app.get('/api/customers/:id', async (req, res) => {
+    const customerId = req.params.id;
+    console.log(customerId);
+
+    try {
+        const customer = await Customer.findById(customerId);
+        console.log(customer);
+        if (!customer) {
+            return res.status(404).json({ error: 'Customer not found' });
+        } else {
+            res.json({ customer });
+
+        }
+
+    } catch (e) {
+        res.status(501).json({ error: e.message });
+    }
+})
+
+app.delete("/api/customers/:id", async (req, res) => {
+    const customerId = req.params.id;
+    try{
+
+        const result=await Customer.deleteOne({ _id: customerId });
+    res.json({ deletedCount:result.deletedCount });
+    }
+    catch(e){
+        res.status(501).json({ error: e.message });
+    }
+    
+
+
+})
+
+app.put('/api/customers/:id', async (req, res) => {
+    const customerId = req.params.id;
+    console.log(customerId);
+    try {
+        const result = await Customer.findOneAndReplace({ _id: customerId }, req.body, { new: true });
+        res.json({ updatedCount: result});
+
+    } catch (err) {
+        res.status(501).json({ error: e.message });
+
+    }
+
+})
+//post adding a resource and put in used to update a resource.
+
+
+
 app.post('/api/customers', async (req, res) => {
     const customer = new Customer({
         name: req.body.name,
@@ -51,12 +101,13 @@ app.post('/api/customers', async (req, res) => {
     });
     try {
         await customer.save();
+        res.json({ customer });
 
     } catch (e) {
         res.status(400).json({ error: e.message });
     }
 
-    res.json({ customer });
+    
 
 })
 
