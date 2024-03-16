@@ -62,17 +62,36 @@ app.get('/api/customers/:id', async (req, res) => {
     }
 })
 
-app.delete("/api/customers/:id", async (req, res) => {
+app.get('/api/orders/:id', async (req, res) => {
     const customerId = req.params.id;
-    try{
+    console.log(customerId);
 
-        const result=await Customer.deleteOne({ _id: customerId });
-    res.json({ deletedCount:result.deletedCount });
-    }
-    catch(e){
+    try {
+        const customer = await Customer.findOne({"orders._id":req.params.id});
+        console.log(customer);
+        if (!customer) {
+            return res.status(404).json({ error: 'Customer not found' });
+        } else {
+            res.json({ customer });
+
+        }
+
+    } catch (e) {
         res.status(501).json({ error: e.message });
     }
-    
+})
+
+app.delete("/api/customers/:id", async (req, res) => {
+    const customerId = req.params.id;
+    try {
+
+        const result = await Customer.deleteOne({ _id: customerId });
+        res.json({ deletedCount: result.deletedCount });
+    }
+    catch (e) {
+        res.status(501).json({ error: e.message });
+    }
+
 
 
 })
@@ -82,7 +101,7 @@ app.put('/api/customers/:id', async (req, res) => {
     console.log(customerId);
     try {
         const result = await Customer.findOneAndReplace({ _id: customerId }, req.body, { new: true });
-        res.json({ updatedCount: result});
+        res.json({ updatedCount: result });
 
     } catch (err) {
         res.status(501).json({ error: e.message });
@@ -95,10 +114,7 @@ app.put('/api/customers/:id', async (req, res) => {
 
 
 app.post('/api/customers', async (req, res) => {
-    const customer = new Customer({
-        name: req.body.name,
-        industry: req.body.industry
-    });
+    const customer = new Customer(req.body);
     try {
         await customer.save();
         res.json({ customer });
@@ -107,7 +123,47 @@ app.post('/api/customers', async (req, res) => {
         res.status(400).json({ error: e.message });
     }
 
-    
+
+
+})
+
+app.patch('/api/customers/:id', async (req, res) => {
+
+    const customerId = req.params.id;
+
+    try {
+        const result = await Customer.findOneAndUpdate({ _id: customerId }, req.body, { new: true });
+        res.json({ updatedCount: result });
+
+    } catch (err) {
+        res.status(501).json({ error: e.message });
+
+    }
+
+})
+app.patch('/api/orders/:id', async (req, res) => {
+
+    const orderId = req.params.id;
+    req.body._id=orderId;
+    try {
+
+        const result = await Customer.findByIdAndUpdate(
+            { 'orders._id': orderId },
+            //check the order id
+            { $set: { 'orders.$': req.body } },
+            { new: true }
+        )
+        if (result) {
+            res.json(result)
+        } else {
+            res.json("error")
+        }
+
+    } catch (err) {
+        res.status(501).json({ error: e.message });
+
+
+    }
 
 })
 

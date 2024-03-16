@@ -11,12 +11,13 @@ const customerSchema = new mongoose.Schema({
     },
     orders: [
         {
-            description:String,
-            amountInCents:Number
+            description: String,
+            amountInCents: Number
         }
     ]
 
 });
+//this maps the objext to the database
 
 module.exports = mongoose.model('Customer', customerSchema);
 //module.ecports=mongooose.model("customer",customerSchema)
