@@ -193,7 +193,7 @@ app.post('api/register/', async (req, res) => {
 
 const start = async () => {
     try {
-        await mongoose.connect('mongodb+srv://tharuka:lucky@cluster0.ayxmxck.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0');
+        await mongoose.connect();
         console.log('Connected to MongoDB')
 
     }
