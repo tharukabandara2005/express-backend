@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
 const Customer = require('./models/customer');
+const Employee = require('./models/employee');
+const { encryptPassword, comparePassword } = require('./models/encrypt');
 const cors = require('cors');
 
 const PORT = process.env.PORT || 7500;
@@ -166,12 +168,33 @@ app.patch('/api/orders/:id', async (req, res) => {
     }
 
 })
+app.post('api/register/', async (req, res) => {
+
+    console.log(req.body);
+
+    const {username,email, password } = req.body
+    const encyptedPassword = await encryptPassword(password)
+    console.log(encyptedPassword)
+
+    const emailExists = await userModel.findOne({ email: email })
+    if (emailExists) {
+        return res.status(400).json({ error: 'Email already exists' })
+    }
+
+    const user = userModel.create({ username,email, encyptedPassword })
+    return res.json(user)
+
+
+
+})
+
 
 
 
 const start = async () => {
     try {
-        await mongoose.connect(conn);
+        await mongoose.connect('mongodb+srv://tharuka:lucky@cluster0.ayxmxck.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0');
+        console.log('Connected to MongoDB')
 
     }
     catch (err) {
